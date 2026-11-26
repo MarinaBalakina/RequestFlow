@@ -1,0 +1,2 @@
+include:
+  - ../UserRequestsKafkaGenerator/docker-compose.yml

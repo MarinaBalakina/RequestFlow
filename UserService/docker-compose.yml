@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: user-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "55433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./Infrastructure/Database/Tables/users_table.sql:/docker-entrypoint-initdb.d/01-users-table.sql:ro
+      - ./Infrastructure/Database/Indexes/user_indexes.sql:/docker-entrypoint-initdb.d/02-user-indexes.sql:ro
+      - ./Infrastructure/Database/Functions/user_functions.sql:/docker-entrypoint-initdb.d/03-user-functions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d user_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    profiles: ["lab6"]
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  redis-data:
+  postgres-data:
